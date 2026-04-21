@@ -1,3 +1,3 @@
 #!/bin/sh
 
-certbot certonly --manual --preferred-challenges dns-01 -d "*.a4barros.com,a4barros.com" --manual-auth-hook "python3 linode-post-txt.py" --manual-cleanup-hook "python3 linode-delete-txt.py"
+certbot certonly --manual --preferred-challenges dns-01 -d "a4mail.a4barros.com" --manual-auth-hook "python3 /home/a4/certbot_renew/put-txt.py" --manual-cleanup-hook "python3 /home/a4/certbot_renew/delete-txt.py"

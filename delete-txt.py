@@ -7,8 +7,8 @@ import json
 with open(".env") as fp:
     secrets = json.load(fp)
 
-DOMAIN_ID = secrets["DOMAIN_ID"]
-TOKEN = secrets["TOKEN"]
+BEARER = secrets["BEARER"]
+ZONE_ID = secrets["ZONE_ID"]
 
 if not os.path.exists("/tmp/TXT_RECORD_ID"):
     exit(0)
@@ -16,15 +16,16 @@ if not os.path.exists("/tmp/TXT_RECORD_ID"):
 with open("/tmp/TXT_RECORD_ID", mode="r") as fp:
     TXT_RECORD_IDS = fp.read().split(",")
 
-# Normaly the certbot put two TXT records, because we are trying to renew a domain
-# and a windcard domain
+# Normally the certbot puts two TXT records, because we are trying to renew a domain
+# and a wildcard domain
 for ID in TXT_RECORD_IDS:
     if len(ID) > 1:
         res = requests.delete(
-            url=f"https://api.linode.com/v4/domains/{DOMAIN_ID}/records/{ID}",
-            headers= {
-                "Authorization": f"Bearer {TOKEN}",
-                "Content-Type": "application/json"}
+            url=f"https://api.cloudflare.com/client/v4/zones/{ZONE_ID}/dns_records/{ID}",
+            headers={
+                "Authorization": f"Bearer {BEARER}",
+                "Content-Type": "application/json"
+            }
         )
 
         if res.status_code != 200:

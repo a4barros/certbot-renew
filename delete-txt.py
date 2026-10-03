@@ -9,27 +9,31 @@ with open(".env") as fp:
 
 BEARER = secrets["BEARER"]
 ZONE_ID = secrets["ZONE_ID"]
+CERTBOT_VALIDATION = os.environ["CERTBOT_VALIDATION"]
+STATE_FILE = "/tmp/certbot_dns_records.json"
 
-if not os.path.exists("/tmp/TXT_RECORD_ID"):
+if not os.path.exists(STATE_FILE):
     exit(0)
 
-with open("/tmp/TXT_RECORD_ID", mode="r") as fp:
-    TXT_RECORD_IDS = fp.read().split(",")
+with open(STATE_FILE) as fp:
+    records = json.load(fp)
 
-# Normally the certbot puts two TXT records, because we are trying to renew a domain
-# and a wildcard domain
-for ID in TXT_RECORD_IDS:
-    if len(ID) > 1:
-        res = requests.delete(
-            url=f"https://api.cloudflare.com/client/v4/zones/{ZONE_ID}/dns_records/{ID}",
-            headers={
-                "Authorization": f"Bearer {BEARER}",
-                "Content-Type": "application/json"
-            }
-        )
+TXT_RECORD_IDS = records.pop(CERTBOT_VALIDATION, [])
+for record_id in TXT_RECORD_IDS:
+    res = requests.delete(
+        url=f"https://api.cloudflare.com/client/v4/zones/{ZONE_ID}/dns_records/{record_id}",
+        headers={
+            "Authorization": f"Bearer {BEARER}",
+            "Content-Type": "application/json"
+        }
+    )
 
-        if res.status_code != 200:
-            print(res.text)
-            exit(1)
+    if res.status_code != 200:
+        print(res.text)
+        exit(1)
 
-os.remove("/tmp/TXT_RECORD_ID")
+if records:
+    with open(STATE_FILE, "w") as fp:
+        json.dump(records, fp)
+else:
+    os.remove(STATE_FILE)

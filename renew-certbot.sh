@@ -6,7 +6,7 @@ if [ -z "$DOMAIN" ]; then
 	exit 1
 fi
 
-MY_USER=$(python3 -c 'import json; print(json.load(open(".env")).get("USER", ""))')
+MY_USER=$(python3 -c 'import json; print(json.load(open(".env")).get("MY_USER", ""))')
 if [ -z "$MY_USER" ]; then
 	printf '%s\n' "USER must be set in .env" >&2
 	exit 1

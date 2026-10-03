@@ -6,4 +6,10 @@ if [ -z "$DOMAIN" ]; then
 	exit 1
 fi
 
+USER=$(python3 -c 'import json; print(json.load(open(".env")).get("USER", ""))')
+if [ -z "$USER" ]; then
+	printf '%s\n' "USER must be set in .env" >&2
+	exit 1
+fi
+
 certbot certonly --manual --preferred-challenges dns-01 -d "$DOMAIN" --manual-auth-hook "python3 /home/$USER/certbot-renew/post-txt.py" --manual-cleanup-hook "python3 /home/$USER/certbot-renew/delete-txt.py"

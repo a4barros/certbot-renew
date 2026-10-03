@@ -10,7 +10,7 @@ with open(".env") as fp:
 
 BEARER = secrets["BEARER"]
 ZONE_ID = secrets["ZONE_ID"]
-MAIL_DOMAIN = secrets["MAIL_DOMAIN"]
+DOMAIN = secrets["DOMAIN"]
 CERTBOT_VALIDATION = os.environ["CERTBOT_VALIDATION"]
 WAIT_TIME = secrets["WAIT_TIME"]
 
@@ -23,7 +23,7 @@ res = requests.post(
     },
     json={
         "type": "TXT",
-        "name": f"_acme-challenge.{MAIL_DOMAIN}",
+        "name": f"_acme-challenge.{DOMAIN}",
         "content": CERTBOT_VALIDATION,
         "ttl": 120
     }

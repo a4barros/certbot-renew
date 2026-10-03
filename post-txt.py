@@ -10,32 +10,38 @@ with open(".env") as fp:
 
 BEARER = secrets["BEARER"]
 ZONE_ID = secrets["ZONE_ID"]
-DOMAIN = os.environ["CERTBOT_DOMAIN"].removeprefix("*.")
+DOMAINS = secrets["DOMAINS"]
 CERTBOT_VALIDATION = os.environ["CERTBOT_VALIDATION"]
 WAIT_TIME = secrets["WAIT_TIME"]
 
-# Create TXT record for _acme-challenge
-res = requests.post(
-    url=f"https://api.cloudflare.com/client/v4/zones/{ZONE_ID}/dns_records",
-    headers={
-        "Authorization": f"Bearer {BEARER}",
-        "Content-Type": "application/json"
-    },
-    json={
-        "type": "TXT",
-        "name": f"_acme-challenge.{DOMAIN}",
-        "content": CERTBOT_VALIDATION,
-        "ttl": 120
-    }
-)
+for domain in DOMAINS:
+    domain = domain.remove_prefix("*.")
+    print("Creating TXT record for _acme-challenge." + domain)
 
-if res.status_code != 200:
-    print(res.text)
-    exit(1)
+    # Create TXT record for _acme-challenge
+    res = requests.post(
+        url=f"https://api.cloudflare.com/client/v4/zones/{ZONE_ID}/dns_records",
+        headers={
+            "Authorization": f"Bearer {BEARER}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "type": "TXT",
+            "name": f"_acme-challenge.{domain}",
+            "content": CERTBOT_VALIDATION,
+            "ttl": 120
+        }
+    )
 
-TXT_RECORD_ID = str(res.json()["result"]["id"])
+    if res.status_code != 200:
+        print(res.text)
+        exit(1)
+    else:
+        print(f"TXT record created for _acme-challenge.{domain}")
 
-with open("/tmp/TXT_RECORD_ID", "a") as fp:
-    fp.write(f"{TXT_RECORD_ID},")
+    TXT_RECORD_ID = str(res.json()["result"]["id"])
 
-time.sleep(WAIT_TIME)
+    with open("/tmp/TXT_RECORD_ID", "a") as fp:
+        fp.write(f"{TXT_RECORD_ID},")
+
+    time.sleep(WAIT_TIME)

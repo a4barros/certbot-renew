@@ -10,7 +10,7 @@ with open(".env") as fp:
 
 BEARER = secrets["BEARER"]
 ZONE_ID = secrets["ZONE_ID"]
-DOMAIN = secrets["DOMAIN"]
+DOMAIN = os.environ["CERTBOT_DOMAIN"].removeprefix("*.")
 CERTBOT_VALIDATION = os.environ["CERTBOT_VALIDATION"]
 WAIT_TIME = secrets["WAIT_TIME"]
 
